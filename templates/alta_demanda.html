@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processando - Viva+</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .btn-tentar {
+            background-color: #e56b3d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: background-color 0.3s ease;
+        }
+        .btn-tentar:hover {
+            background-color: #d15d31;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="text-section" style="max-width: 600px; margin: 0 auto; text-align: center; padding-top: 50px;">
+            <h1 style="color: #e56b3d;">Fila de Processamento 🤖</h1>
+            <p>Nossa Inteligência Artificial está recebendo muitos currículos neste exato segundo.</p>
+            <p>Para garantir a sua análise sem falhas, estamos aguardando a fila do servidor estabilizar.</p>
+            
+            <p style="font-size: 1.2em; margin-top: 20px;">Reenviando automaticamente em: <strong id="contador" style="color: #e56b3d; font-size: 1.5em;">60</strong></p>
+            
+            <!-- Botão para o usuário apressar o envio -->
+            <button class="btn-tentar" onclick="forcarEnvio()">Tentar Novamente Agora</button>
+            
+            <!-- Formulário invisível (usando textarea) -->
+            <form id="formReenvio" action="/analisar" method="POST" style="display: none;">
+                <textarea name="nome">{{ nome }}</textarea>
+                <textarea name="arquivo_salvo">{{ arquivo_salvo }}</textarea>
+                <textarea name="texto_curriculo">{{ texto_curriculo }}</textarea>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let tempo = 60;
+        const contador = document.getElementById('contador');
+        const form = document.getElementById('formReenvio');
+        
+        // Função que força o envio imediato e para o relógio
+        function forcarEnvio() {
+            clearInterval(intervalo);
+            contador.innerText = "Enviando...";
+            form.submit();
+        }
+        
+        // Relógio automático
+        const intervalo = setInterval(() => {
+            tempo--;
+            contador.innerText = tempo;
+            
+            if(tempo <= 0) {
+                forcarEnvio();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

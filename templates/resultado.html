@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado da Análise - Viva+</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .resultado-box {
+            background-color: #f8f9fa;
+            border-left: 5px solid #e56b3d;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+            white-space: pre-wrap; /* Mantém as quebras de linha da IA */
+            font-size: 1.05em;
+            color: #333;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="text-section" style="padding-right: 0; max-width: 800px; margin: 0 auto; text-align: center;">
+            <span class="highlight-tag">— ETAPA 3: RESULTADO</span>
+            <h1>Análise Concluída, {{ candidato }}!</h1>
+            <p>Nossa inteligência artificial analisou suas habilidades técnicas de forma ética e imparcial. Veja abaixo a recomendação de carreira na Viva+.</p>
+            
+            <div class="resultado-box">
+{{ analise }}
+            </div>
+
+            <div style="margin-top: 40px;">
+                <a href="/" class="btn-submit" style="text-decoration: none; display: inline-block; width: auto;">Voltar ao Início</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

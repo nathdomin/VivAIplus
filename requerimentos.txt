@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+pdfplumber
+python-docx
+supabase
+python-dotenv
+b2sdk
+google-generativeai
