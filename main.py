@@ -89,7 +89,7 @@ try:
         b2_bucket = b2_api.get_bucket_by_name(bucket_name)
         print(f"✅ Conectado com sucesso ao bucket: {bucket_name}\n")
 except Exception as e:
-    print(f"\n❌ ERRO GRAVE AO CONECTAR NO BACKBLAZE:")
+    print("\n❌ ERRO GRAVE AO CONECTAR NO BACKBLAZE:")
     print(f"Detalhe: {str(e)}\n")
 
 # Apaga do B2 os currículos mais antigos que RETENCAO_DIAS (LGPD)
@@ -387,7 +387,7 @@ def analisar_candidato(
         print(f"⏳ Gemini continua indisponível depois de {GEMINI_TENTATIVAS} tentativas ({e}). Redirecionando para auto-reenvio...")
         return tela_alta_demanda(request, nome, arquivo_salvo, texto_curriculo, consentimento_em)
     except Exception as e:
-        print(f"\n--- ERRO NA API DO GEMINI ---")
+        print("\n--- ERRO NA API DO GEMINI ---")
         print(str(e))
         print("-----------------------------\n")
         raise HTTPException(status_code=500, detail=f"Erro ao processar a Inteligência Artificial: {str(e)}")
