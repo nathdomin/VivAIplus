@@ -4,23 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orientação de Carreira - Viva+</title>
+    <script src="/static/embed.js"></script>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="main-wrapper">
-        <div class="text-section">
-            <span class="highlight-tag">— ORIENTAÇÃO DE CARREIRA</span>
-            <h1>Vamos encontrar o seu <br>lugar na Viva+?</h1>
+        <!-- Introdução: escondida dentro do site, que já mostra este texto ao lado da moldura -->
+        <div class="text-section oculto-no-site">
+            <span class="highlight-tag">Orientação de carreira</span>
+            <h1>Vamos encontrar o seu lugar na Viva+?</h1>
             <p>Preencha o formulário e anexe seu currículo. Nossa ferramenta irá analisar seu perfil e sugerir as áreas administrativas mais compatíveis com seus objetivos.</p>
-            
+
             <div class="privacy-notice">
                 <strong>Privacidade e LGPD:</strong> Seus dados e arquivo serão armazenados em ambiente privado e seguro, utilizados apenas para fins de orientação profissional.
             </div>
         </div>
 
         <div class="form-section">
+            <h2 class="titulo-formulario">Envie seu currículo</h2>
             <form action="/upload" method="POST" enctype="multipart/form-data">
-                
+
                 <div class="form-group">
                     <label for="nome">Nome completo</label>
                     <input type="text" id="nome" name="nome" required>

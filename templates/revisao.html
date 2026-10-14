@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Revisão de Currículo - Viva+</title>
+    <script src="/static/embed.js"></script>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <div class="main-wrapper">
         <div class="text-section">
-            <span class="highlight-tag">— ETAPA 2: REVISÃO</span>
+            <span class="highlight-tag">Etapa 2: revisão</span>
             <h1>Verifique o seu perfil, {{ candidato.split(' ')[0] }}</h1>
             <p>Nossa ferramenta extraiu o texto do seu currículo. Por favor, leia atentamente e faça correções se necessário. Você pode adicionar ou apagar informações antes da análise de compatibilidade.</p>
         </div>
@@ -19,7 +20,7 @@
                 <!-- Campos ocultos para não perdermos quem é o candidato na próxima etapa -->
                 <input type="hidden" name="nome" value="{{ candidato }}">
                 <input type="hidden" name="arquivo_salvo" value="{{ arquivo_salvo }}">
-                
+
                 <div class="form-group">
                     <label for="texto_curriculo">Texto extraído do documento:</label>
                     <textarea id="texto_curriculo" name="texto_curriculo" rows="15" required>{{ texto_extraido }}</textarea>

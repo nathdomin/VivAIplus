@@ -4,105 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultado da Análise - Viva+</title>
+    <script src="/static/embed.js"></script>
     <link rel="stylesheet" href="/static/style.css">
-    <style>
-        .resultado-wrapper {
-            max-width: 800px;
-            margin: 0 auto;
-            text-align: center;
-        }
-        .resumo-perfil {
-            color: #555;
-            font-size: 1.05em;
-            line-height: 1.6;
-        }
-        .recomendacoes {
-            list-style: none;
-            padding: 0;
-            margin: 30px 0 0;
-            display: grid;
-            gap: 16px;
-            text-align: left;
-        }
-        .recomendacao {
-            background-color: #ffffff;
-            border: 1px solid #E4E4DB;
-            border-left: 5px solid #C0D21F;
-            border-radius: 12px;
-            padding: 22px 24px;
-        }
-        .recomendacao.principal {
-            border-left-color: #EA713B;
-        }
-        .recomendacao-topo {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .recomendacao h2 {
-            color: #2F3283;
-            font-size: 1.3em;
-            margin: 0;
-        }
-        .selo-principal {
-            color: #EA713B;
-            font-weight: bold;
-            font-size: 0.75em;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-        .aderencia {
-            margin: 14px 0 6px;
-            height: 8px;
-            background-color: #F0F1E8;
-            border-radius: 999px;
-            overflow: hidden;
-        }
-        .aderencia-barra {
-            height: 100%;
-            background: linear-gradient(90deg, #2F3283, #C0D21F);
-            border-radius: 999px;
-        }
-        .aderencia-rotulo {
-            font-size: 0.85em;
-            color: #666B76;
-        }
-        .recomendacao p {
-            line-height: 1.6;
-            color: #333;
-        }
-        .evidencias {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            padding: 0;
-            margin: 0 0 16px;
-            list-style: none;
-        }
-        .evidencias li {
-            background-color: #F7F8F2;
-            border: 1px solid #E4E4DB;
-            border-radius: 999px;
-            padding: 4px 12px;
-            font-size: 0.85em;
-            color: #2F3283;
-        }
-        .link-setor {
-            color: #2F3283;
-            font-weight: bold;
-            text-decoration: none;
-        }
-        .link-setor:hover {
-            color: #EA713B;
-        }
-    </style>
 </head>
 <body>
     <div class="main-wrapper">
-        <div class="text-section resultado-wrapper" style="padding-right: 0;">
-            <span class="highlight-tag">— ETAPA 3: RESULTADO</span>
+        <div class="text-section centralizada">
+            <span class="highlight-tag">Etapa 3: resultado</span>
             <h1>Análise Concluída, {{ candidato }}!</h1>
             <p>Nossa inteligência artificial analisou suas habilidades técnicas de forma ética e imparcial. Veja abaixo os setores da Viva+ que mais combinam com o seu perfil.</p>
             {% if resumo_perfil %}
@@ -134,8 +42,8 @@
                 {% endfor %}
             </ol>
 
-            <div style="margin-top: 40px;">
-                <a href="/" class="btn-submit" style="text-decoration: none; display: inline-block; width: auto;">Voltar ao Início</a>
+            <div class="acoes">
+                <a href="/" class="btn-submit btn-outline auto">Analisar outro currículo</a>
             </div>
         </div>
     </div>

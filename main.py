@@ -11,6 +11,7 @@ import json
 import pdfplumber
 import docx
 import requests
+from urllib.parse import urlsplit
 
 load_dotenv()
 
@@ -22,6 +23,29 @@ app = FastAPI(title="Sistema de Orientação Viva+")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+
+# --- Incorporação no site (iframe) ---
+# Só o próprio agente e o site Viva+ (SITE_URL) podem exibir estas páginas
+# dentro de um iframe. FRAME_ANCESTORS acrescenta outras origens, separadas
+# por espaço (ex.: "http://localhost:5501" para testar o site localmente).
+_site = urlsplit(SITE_URL)
+FRAME_ANCESTORS = " ".join(
+    ["'self'", f"{_site.scheme}://{_site.netloc}", *os.getenv("FRAME_ANCESTORS", "").split()]
+)
+
+
+@app.middleware("http")
+async def permitir_iframe_do_site(request: Request, call_next):
+    resposta = await call_next(request)
+    resposta.headers["Content-Security-Policy"] = f"frame-ancestors {FRAME_ANCESTORS}"
+    return resposta
+
+
+# Rota leve que o site chama ao abrir, para "acordar" o serviço no Render
+# antes de o visitante chegar à seção Carreira.
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 b2_bucket = None
 
