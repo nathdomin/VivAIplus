@@ -5,6 +5,7 @@ from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
 from b2sdk.v2 import InMemoryAccountInfo, B2Api
 import uuid
+import hashlib
 import os
 import io
 import json
@@ -23,6 +24,22 @@ app = FastAPI(title="Sistema de Orientação Viva+")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
+
+
+# --- Versão dos arquivos estáticos ---
+# Os templates pedem /static/style.css?v=<versao>. A versão é um hash do
+# conteúdo da pasta static/, então muda a cada deploy que altera o CSS/JS e
+# o navegador do visitante não reaproveita uma cópia antiga do cache.
+def _versao_estaticos(pasta="static"):
+    h = hashlib.sha256()
+    for raiz, _, arquivos in sorted(os.walk(pasta)):
+        for nome in sorted(arquivos):
+            with open(os.path.join(raiz, nome), "rb") as f:
+                h.update(f.read())
+    return h.hexdigest()[:10]
+
+
+templates.env.globals["versao_estaticos"] = _versao_estaticos()
 
 # --- Incorporação no site (iframe) ---
 # Só o próprio agente e o site Viva+ (SITE_URL) podem exibir estas páginas
