@@ -7,4 +7,4 @@ python-docx
 supabase
 python-dotenv
 b2sdk
-google-generativeai
+requests

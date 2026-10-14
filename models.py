@@ -1,22 +1,25 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List
 
-class Competencia(BaseModel):
-    nome: str
-    justificativa: str
 
-class Requisito(BaseModel):
+class Setor(BaseModel):
+    """Setor como publicado pelo site Viva+ em data/setores.json."""
+    id: str
     nome: str
-    justificativa: str
+    resumo: str = ""
+    objetivo: List[str] = []
+    atividades: List[str] = []
+    competencias: List[str] = []
+    requisitos: List[str] = []
 
-class PerfilSetor(BaseModel):
-    nome: str
-    descricao: str
-    objetivos: str
-    tarefas_comuns: List[str]
-    competencias_desejaveis: List[Competencia]
-    preferencias_trabalho: List[str]
-    requisitos_essenciais: List[Requisito]
-    versao: str
-    data_revisao: str
-    responsavel_aprovacao: str
+
+class RecomendacaoSetor(BaseModel):
+    setor_id: str
+    aderencia: int = Field(ge=0, le=100)
+    justificativa: str
+    evidencias: List[str] = []
+
+
+class AnaliseCurriculo(BaseModel):
+    resumo_perfil: str
+    recomendacoes: List[RecomendacaoSetor]

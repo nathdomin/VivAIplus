@@ -6,34 +6,159 @@
     <title>Resultado da Análise - Viva+</title>
     <link rel="stylesheet" href="/static/style.css">
     <style>
-        .resultado-box {
-            background-color: #f8f9fa;
-            border-left: 5px solid #e56b3d;
-            padding: 25px;
-            border-radius: 8px;
-            margin-top: 20px;
-            white-space: pre-wrap; /* Mantém as quebras de linha da IA */
+        .resultado-wrapper {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .resumo-perfil {
+            color: #555;
             font-size: 1.05em;
-            color: #333;
             line-height: 1.6;
+        }
+        .recomendacoes {
+            list-style: none;
+            padding: 0;
+            margin: 30px 0 0;
+            display: grid;
+            gap: 16px;
+            text-align: left;
+        }
+        .recomendacao {
+            background-color: #ffffff;
+            border: 1px solid #E4E4DB;
+            border-left: 5px solid #C0D21F;
+            border-radius: 12px;
+            padding: 22px 24px;
+        }
+        .recomendacao.principal {
+            border-left-color: #EA713B;
+        }
+        .recomendacao-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .recomendacao h2 {
+            color: #2F3283;
+            font-size: 1.3em;
+            margin: 0;
+        }
+        .selo-principal {
+            color: #EA713B;
+            font-weight: bold;
+            font-size: 0.75em;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        .aderencia {
+            margin: 14px 0 6px;
+            height: 8px;
+            background-color: #F0F1E8;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .aderencia-barra {
+            height: 100%;
+            background: linear-gradient(90deg, #2F3283, #C0D21F);
+            border-radius: 999px;
+        }
+        .aderencia-rotulo {
+            font-size: 0.85em;
+            color: #666B76;
+        }
+        .recomendacao p {
+            line-height: 1.6;
+            color: #333;
+        }
+        .evidencias {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 0;
+            margin: 0 0 16px;
+            list-style: none;
+        }
+        .evidencias li {
+            background-color: #F7F8F2;
+            border: 1px solid #E4E4DB;
+            border-radius: 999px;
+            padding: 4px 12px;
+            font-size: 0.85em;
+            color: #2F3283;
+        }
+        .link-setor {
+            color: #2F3283;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .link-setor:hover {
+            color: #EA713B;
         }
     </style>
 </head>
 <body>
     <div class="main-wrapper">
-        <div class="text-section" style="padding-right: 0; max-width: 800px; margin: 0 auto; text-align: center;">
+        <div class="text-section resultado-wrapper" style="padding-right: 0;">
             <span class="highlight-tag">— ETAPA 3: RESULTADO</span>
             <h1>Análise Concluída, {{ candidato }}!</h1>
-            <p>Nossa inteligência artificial analisou suas habilidades técnicas de forma ética e imparcial. Veja abaixo a recomendação de carreira na Viva+.</p>
-            
-            <div class="resultado-box">
-{{ analise }}
-            </div>
+            <p>Nossa inteligência artificial analisou suas habilidades técnicas de forma ética e imparcial. Veja abaixo os setores da Viva+ que mais combinam com o seu perfil.</p>
+            {% if resumo_perfil %}
+            <p class="resumo-perfil">{{ resumo_perfil }}</p>
+            {% endif %}
+
+            <ol class="recomendacoes">
+                {% for r in recomendacoes %}
+                <li class="recomendacao{% if loop.first %} principal{% endif %}">
+                    <div class="recomendacao-topo">
+                        <h2>{{ r.nome }}</h2>
+                        {% if loop.first %}<span class="selo-principal">Maior aderência</span>{% endif %}
+                    </div>
+                    <div class="aderencia" role="img" aria-label="Aderência ao setor {{ r.nome }}: {{ r.aderencia }}%">
+                        <div class="aderencia-barra" style="width: {{ r.aderencia }}%"></div>
+                    </div>
+                    <span class="aderencia-rotulo">{{ r.aderencia }}% de aderência</span>
+
+                    <p>{{ r.justificativa }}</p>
+
+                    {% if r.evidencias %}
+                    <ul class="evidencias" aria-label="Evidências do currículo">
+                        {% for e in r.evidencias %}<li>{{ e }}</li>{% endfor %}
+                    </ul>
+                    {% endif %}
+
+                    <a href="{{ r.link }}" class="link-setor" data-setor="{{ r.setor_id }}" target="_top">Conhecer o setor {{ r.nome }} →</a>
+                </li>
+                {% endfor %}
+            </ol>
 
             <div style="margin-top: 40px;">
                 <a href="/" class="btn-submit" style="text-decoration: none; display: inline-block; width: auto;">Voltar ao Início</a>
             </div>
         </div>
     </div>
+
+    <script>
+        // Dentro do iframe da seção Carreira do site, pede para o próprio site
+        // abrir o modal do setor (sem recarregar a página). Fora do iframe,
+        // o link segue normal e abre o site já com o modal aberto.
+        const origemSite = new URL({{ site_url | tojson }}).origin;
+        const ancestrais = window.location.ancestorOrigins;
+        const dentroDoSite = window.parent !== window &&
+            (!ancestrais || ancestrais[0] === origemSite);
+
+        document.querySelectorAll(".link-setor").forEach((link) => {
+            link.addEventListener("click", (e) => {
+                if (!dentroDoSite) return;
+                e.preventDefault();
+                window.parent.postMessage(
+                    { type: "vivaplus:abrir-setor", setorId: link.dataset.setor },
+                    origemSite
+                );
+            });
+        });
+    </script>
 </body>
 </html>
