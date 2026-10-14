@@ -200,6 +200,37 @@ textarea:focus-visible {
     cursor: pointer;
 }
 
+/* ---------- Consentimento (LGPD) ---------- */
+.form-group.consentimento {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: var(--radius-md);
+    background-color: rgba(192, 210, 31, 0.14);
+}
+
+.form-group.consentimento input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+    padding: 0;
+    accent-color: var(--color-blue);
+    cursor: pointer;
+}
+
+.form-group.consentimento label {
+    margin: 0;
+    color: var(--color-text);
+    font-weight: 400;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    cursor: pointer;
+}
+
+.form-group.consentimento strong { color: var(--color-blue); }
+
 /* ---------- Botões (mesmo .btn-primary do site) ---------- */
 .btn-submit {
     display: inline-flex;

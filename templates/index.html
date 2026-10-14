@@ -16,7 +16,7 @@
             <p>Preencha o formulário e anexe seu currículo. Nossa ferramenta irá analisar seu perfil e sugerir as áreas administrativas mais compatíveis com seus objetivos.</p>
 
             <div class="privacy-notice">
-                <strong>Privacidade e LGPD:</strong> Seus dados e arquivo serão armazenados em ambiente privado e seguro, utilizados apenas para fins de orientação profissional.
+                <strong>Privacidade e LGPD:</strong> Seus dados e arquivo serão armazenados em ambiente privado e seguro, utilizados apenas para fins de orientação profissional e excluídos automaticamente após {{ retencao_dias }} dias.
             </div>
         </div>
 
@@ -42,6 +42,15 @@
                 <div class="form-group">
                     <label for="curriculo">Anexar Currículo (PDF ou DOCX, máx 5MB)</label>
                     <input type="file" id="curriculo" name="curriculo" accept=".pdf,.docx" required>
+                </div>
+
+                <div class="form-group consentimento">
+                    <input type="checkbox" id="consentimento" name="consentimento" value="sim" required>
+                    <label for="consentimento">
+                        Autorizo a Viva+ a usar meu currículo e meus dados <strong>apenas para esta orientação de carreira</strong>.
+                        Antes da análise por IA, dados pessoais como nome, contato, documentos, endereço, idade e estado civil são removidos.
+                        O arquivo e a análise ficam guardados por até {{ retencao_dias }} dias e depois são excluídos automaticamente.
+                    </label>
                 </div>
 
                 <button type="submit" class="btn-submit">Enviar para análise</button>

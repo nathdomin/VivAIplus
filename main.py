@@ -5,6 +5,9 @@ from fastapi.templating import Jinja2Templates
 from dotenv import load_dotenv
 from b2sdk.v2 import InMemoryAccountInfo, B2Api
 import uuid
+import random
+import time
+from datetime import datetime, timezone
 import hashlib
 import os
 import io
@@ -19,6 +22,8 @@ load_dotenv()
 from database import supabase
 from models import AnaliseCurriculo, RecomendacaoSetor
 from setores_site import SITE_URL, carregar_setores, link_do_setor
+from privacidade import anonimizar_curriculo
+from retencao import RETENCAO_DIAS, iniciar_limpeza_periodica
 
 app = FastAPI(title="Sistema de Orientação Viva+")
 
@@ -40,6 +45,7 @@ def _versao_estaticos(pasta="static"):
 
 
 templates.env.globals["versao_estaticos"] = _versao_estaticos()
+templates.env.globals["retencao_dias"] = RETENCAO_DIAS
 
 # --- Incorporação no site (iframe) ---
 # Só o próprio agente e o site Viva+ (SITE_URL) podem exibir estas páginas
@@ -86,6 +92,9 @@ except Exception as e:
     print(f"\n❌ ERRO GRAVE AO CONECTAR NO BACKBLAZE:")
     print(f"Detalhe: {str(e)}\n")
 
+# Apaga do B2 os currículos mais antigos que RETENCAO_DIAS (LGPD)
+iniciar_limpeza_periodica(b2_bucket)
+
 # --- Função de Extração de Texto ---
 def extrair_texto_arquivo(conteudo_bytes, extensao):
     texto_extraido = ""
@@ -123,8 +132,13 @@ async def processar_candidatura(
     nome: str = Form(...),
     email: str = Form(...),
     areas_interesse: str = Form(...),
-    curriculo: UploadFile = File(...)
+    curriculo: UploadFile = File(...),
+    consentimento: str = Form(None)
 ):
+    # LGPD: sem o aceite, o currículo nem chega a ser salvo
+    if consentimento != "sim":
+        raise HTTPException(status_code=400, detail="Para continuar, é preciso aceitar o uso dos seus dados para a orientação de carreira.")
+
     if b2_bucket is None:
         raise HTTPException(status_code=500, detail="Erro de configuração no servidor.")
 
@@ -159,7 +173,8 @@ async def processar_candidatura(
         context={
             "candidato": nome,
             "arquivo_salvo": nome_seguro,
-            "texto_extraido": texto_curriculo
+            "texto_extraido": texto_curriculo,
+            "consentimento_em": datetime.now(timezone.utc).isoformat(timespec="seconds")
         }
     )
 
@@ -237,24 +252,85 @@ def interpretar_analise(texto_json, setores):
     )
 
 
-def tela_alta_demanda(request, nome, arquivo_salvo, texto_curriculo):
+def tela_alta_demanda(request, nome, arquivo_salvo, texto_curriculo, consentimento_em):
     return templates.TemplateResponse(
         request=request,
         name="alta_demanda.html",
         context={
             "nome": nome,
             "arquivo_salvo": arquivo_salvo,
-            "texto_curriculo": texto_curriculo
+            "texto_curriculo": texto_curriculo,
+            "consentimento_em": consentimento_em
         }
     )
 
 
+# --- Chamada ao Gemini com novas tentativas ---
+# Erros temporários (sobrecarga, limite de requisições, falha de rede) são
+# repetidos aqui no servidor, com espera crescente, antes de mostrar a tela
+# de "alta demanda" ao candidato.
+GEMINI_TENTATIVAS = int(os.getenv("GEMINI_TENTATIVAS", "4"))
+GEMINI_ESPERA_BASE = float(os.getenv("GEMINI_ESPERA_BASE", "2"))  # segundos: 2, 4, 8...
+GEMINI_TIMEOUT = 30
+STATUS_TEMPORARIOS = {429, 500, 502, 503, 504}
+
+
+class GeminiIndisponivel(Exception):
+    pass
+
+
+def chamar_gemini(url, headers, payload):
+    ultimo_erro = ""
+    for tentativa in range(1, GEMINI_TENTATIVAS + 1):
+        espera = GEMINI_ESPERA_BASE * 2 ** (tentativa - 1) + random.uniform(0, 1)
+        try:
+            resposta = requests.post(url, headers=headers, json=payload, timeout=GEMINI_TIMEOUT)
+        except (requests.exceptions.Timeout, requests.exceptions.ConnectionError) as e:
+            ultimo_erro = f"falha de rede: {e}"
+        else:
+            if resposta.status_code == 200:
+                return resposta.json()
+            if resposta.status_code not in STATUS_TEMPORARIOS:
+                raise Exception(f"Erro da API do Google (HTTP {resposta.status_code}): {resposta.text[:500]}")
+            ultimo_erro = f"HTTP {resposta.status_code}"
+            # Respeita o Retry-After do Google, se vier, sem passar de 15 s
+            try:
+                espera = min(15.0, max(espera, float(resposta.headers.get("Retry-After", 0))))
+            except ValueError:
+                pass
+
+        if tentativa < GEMINI_TENTATIVAS:
+            print(f"⏳ Gemini indisponível ({ultimo_erro}); tentativa {tentativa}/{GEMINI_TENTATIVAS}, nova tentativa em {espera:.1f}s")
+            time.sleep(espera)
+
+    raise GeminiIndisponivel(ultimo_erro)
+
+
+def salvar_candidato(dados_candidato):
+    """Insere no Supabase. Se a coluna consentimento_em ainda não existir
+    (SQL da fase 3 não aplicado), salva sem ela em vez de perder o registro."""
+    # returning="minimal": o agente só insere; com o RLS de supabase/fase3_lgpd.sql
+    # ele não tem permissão de leitura, então não pede a linha de volta.
+    try:
+        supabase.table("candidatos").insert(dados_candidato, returning="minimal").execute()
+    except Exception as e:
+        if "consentimento_em" in str(e):
+            print("Aviso: coluna consentimento_em não existe no Supabase; rode supabase/fase3_lgpd.sql.")
+            dados_sem_coluna = {k: v for k, v in dados_candidato.items() if k != "consentimento_em"}
+            supabase.table("candidatos").insert(dados_sem_coluna, returning="minimal").execute()
+        else:
+            raise
+
+
+# Função síncrona de propósito: o FastAPI a executa numa thread separada, então
+# as esperas entre tentativas do Gemini não travam os outros visitantes.
 @app.post("/analisar")
-async def analisar_candidato(
+def analisar_candidato(
     request: Request,
     nome: str = Form(...),
     arquivo_salvo: str = Form(...),
-    texto_curriculo: str = Form(...)
+    texto_curriculo: str = Form(...),
+    consentimento_em: str = Form("")
 ):
     # 1. Buscar os setores publicados no site Viva+ (data/setores.json)
     try:
@@ -285,7 +361,7 @@ async def analisar_candidato(
       - "evidencias": trechos curtos do currículo (habilidades, cursos, experiências) que sustentam a recomendação.
 
     <curriculo>
-    {texto_curriculo}
+    {anonimizar_curriculo(texto_curriculo, nome)}
     </curriculo>
     """
 
@@ -303,24 +379,13 @@ async def analisar_candidato(
     }
 
     try:
-        # TIMEOUT de 60 segundos
-        resposta = requests.post(url, headers=headers, json=payload, timeout=60)
-        resposta_json = resposta.json()
-
-        # Detecta Alta Demanda
-        if resposta.status_code == 503 or resposta_json.get('error', {}).get('code') == 503:
-            print("⏳ Alta demanda detectada. Redirecionando para auto-reenvio...")
-            return tela_alta_demanda(request, nome, arquivo_salvo, texto_curriculo)
-
-        if resposta.status_code != 200:
-            raise Exception(f"Erro da API do Google: {resposta_json}")
-
+        resposta_json = chamar_gemini(url, headers, payload)
         resultado_texto = resposta_json['candidates'][0]['content']['parts'][0]['text']
         analise = interpretar_analise(resultado_texto, setores)
 
-    except requests.exceptions.ReadTimeout:
-        print("⏳ Timeout de rede. Redirecionando para auto-reenvio...")
-        return tela_alta_demanda(request, nome, arquivo_salvo, texto_curriculo)
+    except GeminiIndisponivel as e:
+        print(f"⏳ Gemini continua indisponível depois de {GEMINI_TENTATIVAS} tentativas ({e}). Redirecionando para auto-reenvio...")
+        return tela_alta_demanda(request, nome, arquivo_salvo, texto_curriculo, consentimento_em)
     except Exception as e:
         print(f"\n--- ERRO NA API DO GEMINI ---")
         print(str(e))
@@ -335,7 +400,9 @@ async def analisar_candidato(
             "curriculo_texto": texto_curriculo,
             "analise_ia": json.dumps(analise.model_dump(), ensure_ascii=False)
         }
-        supabase.table("candidatos").insert(dados_candidato).execute()
+        if consentimento_em:
+            dados_candidato["consentimento_em"] = consentimento_em
+        salvar_candidato(dados_candidato)
     except Exception as e:
         print(f"Erro ao salvar no banco de dados: {e}")
 
