@@ -1,0 +1,21 @@
+{% extends "_base.html" %}
+
+{% block titulo %}Algo deu errado{% endblock %}
+
+{% block conteudo %}
+<div class="main-wrapper">
+    <div class="text-section centralizada entrada">
+        <div class="erro-icone" aria-hidden="true">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        </div>
+        <span class="highlight-tag">{% if status >= 500 %}Erro no servidor{% else %}Atenção{% endif %}</span>
+        <h1>{{ titulo }}</h1>
+        <p>{{ mensagem }}</p>
+
+        <div class="botoes centralizados">
+            <button type="button" class="btn-submit btn-outline auto" data-voltar>← Voltar</button>
+            <a href="/" class="btn-submit auto">Recomeçar</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

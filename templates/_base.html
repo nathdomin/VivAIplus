@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-etapa="{{ etapa | default(0) }}" data-origens='{{ origens_site | tojson }}'>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2F3283">
+    <title>{% block titulo %}Orientação de Carreira{% endblock %} - Viva+</title>
+    <link rel="icon" href="{{ site_url }}/assets/images/logo-v.png">
+    <script src="/static/embed.js?v={{ versao_estaticos }}"></script>
+    <link rel="stylesheet" href="/static/style.css?v={{ versao_estaticos }}">
+</head>
+<body>
+    <!-- Cabeçalho só aparece quando o agente é aberto fora do site (nova aba) -->
+    <header class="topo oculto-no-site">
+        <a href="{{ site_url }}" class="topo-marca" aria-label="Ir para o site da Viva+">
+            <img src="{{ site_url }}/assets/images/logo.png" alt="Viva+" height="34">
+        </a>
+        <a href="{{ site_url }}/#carreira" class="topo-voltar">← Voltar ao site</a>
+    </header>
+
+    <main class="pagina">
+        {% if etapa %}
+        <ol class="stepper" aria-label="Etapas da orientação de carreira">
+            {% for nome_etapa in ["Envio", "Revisão", "Resultado"] %}
+            {% set n = loop.index %}
+            <li class="stepper-item{% if n == etapa %} is-atual{% elif n < etapa %} is-feita{% endif %}"
+                {% if n == etapa %}aria-current="step"{% endif %}>
+                <span class="stepper-num">{{ "%02d" | format(n) }}</span>
+                <span class="stepper-nome">{{ nome_etapa }}</span>
+            </li>
+            {% endfor %}
+        </ol>
+        {% endif %}
+
+        {% block conteudo %}{% endblock %}
+    </main>
+
+    <!-- Tela de espera usada pelos formulários (data-carregando) -->
+    <div class="carregando" id="carregando" role="status" aria-live="polite" hidden>
+        <span class="spinner" aria-hidden="true"></span>
+        <p class="carregando-titulo" id="carregandoTitulo">Processando…</p>
+        <p class="carregando-texto" id="carregandoTexto"></p>
+    </div>
+
+    {% block scripts %}{% endblock %}
+    <script src="/static/agente.js?v={{ versao_estaticos }}"></script>
+</body>
+</html>

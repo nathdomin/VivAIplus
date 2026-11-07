@@ -1,7 +1,8 @@
 /* =========================================================
    VivAIplus — style.css
    Usa o mesmo design system do site Viva+ (vivaplus/css/style.css):
-   cores oficiais, fontes, raios e sombras. Ao mudar um token lá,
+   cores oficiais, fontes, raios, sombras e componentes (selo do
+   setor, passos numerados, spinner, botões). Ao mudar um token lá,
    replique aqui.
    ========================================================= */
 
@@ -13,11 +14,16 @@
     --color-orange: #EA713B;
     --color-blue: #2F3283;
 
+    /* Derivados de apoio (iguais aos do site) */
     --color-blue-dark: #21244F;
+    --color-blue-soft: #4347A8;
+    --color-green-soft: #E4EDA6;
+    --color-orange-soft: #F7C3A6;
     --color-orange-hover: #D9622C;
 
     --color-white: #FFFFFF;
     --color-background: #F7F8F2;
+    --color-surface: #FFFFFF;
     --color-text: #1B1D2A;
     --color-muted: #666B76;
     --color-border: #E4E4DB;
@@ -25,14 +31,18 @@
     --radius-sm: 8px;
     --radius-md: 16px;
     --radius-lg: 28px;
+    --radius-xl: 40px;
+
+    --transition-fast: 0.2s;
+    --transition-normal: 0.4s;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
 
     --font-display: "Bricolage Grotesque", "Inter", sans-serif;
     --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 
     --shadow-sm: 0 2px 12px rgba(33, 36, 79, 0.06);
     --shadow-md: 0 12px 32px rgba(33, 36, 79, 0.10);
-
-    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --shadow-lg: 0 24px 64px rgba(33, 36, 79, 0.16);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -44,11 +54,7 @@ body {
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 24px;
+    overflow-x: hidden;
 }
 
 h1, h2 {
@@ -65,7 +71,44 @@ textarea:focus-visible {
     outline-offset: 3px;
 }
 
+[hidden] { display: none !important; }
+
+/* ---------- Cabeçalho (só fora do site) ---------- */
+.topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 20px 24px 0;
+}
+
+.topo-marca img { display: block; height: 34px; width: auto; }
+
+.topo-voltar {
+    padding: 10px 18px;
+    border-radius: 999px;
+    color: var(--color-blue);
+    font-weight: 600;
+    font-size: 0.88rem;
+    text-decoration: none;
+    transition: background var(--transition-fast) var(--ease);
+}
+
+.topo-voltar:hover { background: rgba(47, 50, 131, 0.08); }
+
 /* ---------- Layout ---------- */
+.pagina {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    min-height: calc(100vh - 74px);
+    padding: 32px 24px 48px;
+}
+
 .main-wrapper {
     display: flex;
     flex-wrap: wrap;
@@ -119,16 +162,82 @@ textarea:focus-visible {
     line-height: 1.7;
 }
 
+/* Mesmo bloco .career-privacy do site */
 .privacy-notice {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
     margin-top: 28px;
     padding: 16px 18px;
     border-radius: var(--radius-md);
     background-color: rgba(192, 210, 31, 0.14);
+    color: var(--color-blue);
+    text-align: left;
+}
+
+.privacy-notice svg { flex-shrink: 0; margin-top: 2px; }
+
+.text-section .privacy-notice p {
+    margin: 0;
     font-size: 0.86rem;
+    line-height: 1.6;
     color: var(--color-text);
 }
 
 .privacy-notice strong { color: var(--color-blue); }
+
+/* ---------- Passos (mesmo visual de .career-steps do site) ---------- */
+.stepper {
+    display: flex;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.stepper-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 16px 6px 6px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-white);
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0.7;
+}
+
+.stepper-num {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    background: var(--color-background);
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.78rem;
+}
+
+.stepper-item.is-feita { opacity: 1; }
+.stepper-item.is-feita .stepper-num { background: var(--color-green-soft); color: var(--color-blue-dark); }
+
+.stepper-item.is-atual {
+    opacity: 1;
+    color: var(--color-blue);
+    border-color: transparent;
+    box-shadow: var(--shadow-sm);
+}
+
+.stepper-item.is-atual:nth-child(1) .stepper-num { background: var(--color-blue); color: var(--color-white); }
+.stepper-item.is-atual:nth-child(2) .stepper-num { background: var(--color-orange); color: var(--color-white); }
+.stepper-item.is-atual:nth-child(3) .stepper-num { background: var(--color-green); color: var(--color-blue-dark); }
 
 /* ---------- Formulários ---------- */
 .form-section {
@@ -141,17 +250,40 @@ textarea:focus-visible {
     border: 1px solid var(--color-border);
 }
 
+.form-linha {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0 16px;
+}
+
 .form-group {
-    margin-bottom: 20px;
+    margin: 0 0 20px;
     text-align: left;
 }
 
-.form-group label {
+fieldset.form-group {
+    border: none;
+    padding: 0;
+    min-width: 0;
+}
+
+.form-group label,
+.form-group legend,
+.rotulo {
     display: block;
     margin-bottom: 8px;
+    padding: 0;
     color: var(--color-blue);
     font-weight: 600;
     font-size: 0.9rem;
+}
+
+.opcional { color: var(--color-muted); font-weight: 400; }
+
+.dica {
+    margin: 8px 0 0;
+    font-size: 0.8rem;
+    color: var(--color-muted);
 }
 
 .form-group input,
@@ -165,7 +297,7 @@ textarea:focus-visible {
     font: inherit;
     font-size: 0.95rem;
     color: var(--color-text);
-    transition: border-color 0.2s var(--ease);
+    transition: border-color var(--transition-fast) var(--ease), background-color var(--transition-fast) var(--ease);
 }
 
 .form-group textarea {
@@ -182,22 +314,160 @@ textarea:focus-visible {
     background-color: var(--color-white);
 }
 
-.form-group input[type="file"] {
-    padding: 12px;
+.rotulo-linha {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+}
+
+.contador-caracteres {
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.contador-caracteres.is-alerta { color: var(--color-orange); font-weight: 600; }
+
+.erro-campo {
+    margin: 8px 0 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-orange-hover);
+}
+
+/* ---------- Chips de áreas de interesse ---------- */
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.form-group .chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 5px 14px 5px 5px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-white);
+    color: var(--color-text);
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color var(--transition-fast) var(--ease), background var(--transition-fast) var(--ease), transform var(--transition-fast) var(--ease);
+}
+
+.form-group .chip:hover { border-color: var(--color-blue); transform: translateY(-1px); }
+
+/* O checkbox fica invisível, mas continua acessível pelo teclado */
+.form-group .chip input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
     cursor: pointer;
 }
 
-.form-group input[type="file"]::file-selector-button {
-    margin-right: 12px;
-    padding: 8px 16px;
-    border: 1.5px solid var(--color-blue);
-    border-radius: 999px;
-    background: var(--color-white);
+.chip-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    background: var(--color-background);
     color: var(--color-blue);
-    font: inherit;
+    transition: background var(--transition-fast) var(--ease), color var(--transition-fast) var(--ease);
+}
+
+.chip-icone svg { width: 16px; height: 16px; }
+
+.form-group .chip:has(input:checked) {
+    border-color: var(--color-blue);
+    background: rgba(47, 50, 131, 0.06);
+    color: var(--color-blue);
     font-weight: 600;
-    font-size: 0.85rem;
+}
+
+.chip:has(input:checked) .chip-icone {
+    background: var(--accent, var(--color-blue));
+    color: var(--color-white);
+}
+
+.chip:has(input:focus-visible) {
+    outline: 3px solid var(--color-orange);
+    outline-offset: 3px;
+}
+
+/* ---------- Upload com arrastar e soltar ---------- */
+.dropzone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 28px 20px;
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    text-align: center;
+    transition: border-color var(--transition-fast) var(--ease), background var(--transition-fast) var(--ease);
+}
+
+/* O input cobre a área toda: clicar ou soltar o arquivo funciona sem JS */
+.form-group .dropzone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    opacity: 0;
     cursor: pointer;
+}
+
+.dropzone:hover,
+.dropzone.arrastando {
+    border-color: var(--color-blue);
+    background: rgba(47, 50, 131, 0.04);
+}
+
+.dropzone:has(input:focus-visible) {
+    outline: 3px solid var(--color-orange);
+    outline-offset: 3px;
+}
+
+.dropzone-icone { color: var(--color-blue); margin-bottom: 6px; }
+
+.dropzone-titulo {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--color-text);
+    word-break: break-word;
+}
+
+.dropzone-titulo strong { color: var(--color-orange); }
+
+.dropzone-dica { margin: 0; font-size: 0.8rem; color: var(--color-muted); }
+
+.dropzone.tem-arquivo {
+    border-style: solid;
+    border-color: var(--color-green);
+    background: rgba(192, 210, 31, 0.10);
+}
+
+.dropzone.tem-arquivo .dropzone-titulo { font-weight: 600; color: var(--color-blue); }
+
+.dropzone.tem-erro {
+    border-color: var(--color-orange);
+    background: rgba(234, 113, 59, 0.06);
 }
 
 /* ---------- Consentimento (LGPD) ---------- */
@@ -231,6 +501,22 @@ textarea:focus-visible {
 
 .form-group.consentimento strong { color: var(--color-blue); }
 
+/* ---------- Avisos ---------- */
+.aviso {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    padding: 16px 18px;
+    border-radius: var(--radius-md);
+    background: rgba(234, 113, 59, 0.10);
+    color: var(--color-orange-hover);
+}
+
+.aviso svg { flex-shrink: 0; margin-top: 2px; }
+.aviso p { margin: 0; font-size: 0.88rem; color: var(--color-text); }
+.aviso strong { color: var(--color-orange-hover); }
+
 /* ---------- Botões (mesmo .btn-primary do site) ---------- */
 .btn-submit {
     display: inline-flex;
@@ -240,7 +526,7 @@ textarea:focus-visible {
     width: 100%;
     margin-top: 10px;
     padding: 16px 30px;
-    border: none;
+    border: 1.5px solid transparent;
     border-radius: 999px;
     background-color: var(--color-orange);
     color: var(--color-white);
@@ -248,9 +534,10 @@ textarea:focus-visible {
     font-weight: 600;
     font-size: 0.95rem;
     text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
     box-shadow: 0 8px 24px rgba(234, 113, 59, 0.35);
-    transition: background-color 0.2s var(--ease), transform 0.2s var(--ease);
+    transition: background-color var(--transition-fast) var(--ease), color var(--transition-fast) var(--ease), transform var(--transition-fast) var(--ease);
 }
 
 .btn-submit:hover {
@@ -258,12 +545,18 @@ textarea:focus-visible {
     transform: translateY(-2px);
 }
 
+.btn-submit:disabled {
+    opacity: 0.6;
+    cursor: progress;
+    transform: none;
+}
+
 .btn-submit.auto { width: auto; }
 
 .btn-outline {
     background: transparent;
     color: var(--color-blue);
-    border: 1.5px solid var(--color-blue);
+    border-color: var(--color-blue);
     box-shadow: none;
 }
 
@@ -272,55 +565,179 @@ textarea:focus-visible {
     color: var(--color-white);
 }
 
-.acoes {
-    margin-top: 40px;
+.botoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: space-between;
+    margin-top: 8px;
 }
 
-/* ---------- Alta demanda ---------- */
-.contador {
-    margin-top: 20px;
-    font-size: 1.1rem;
-    color: var(--color-text);
+.botoes.centralizados { justify-content: center; margin-top: 36px; }
+
+/* ---------- Tela de carregamento (spinner do site) ---------- */
+.carregando {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 32px;
+    text-align: center;
+    background: rgba(247, 248, 242, 0.94);
+    backdrop-filter: blur(4px);
+    animation: aparecer var(--transition-normal) var(--ease);
 }
 
-.contador strong {
-    color: var(--color-orange);
+.spinner {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-orange);
+    border-right-color: var(--color-green);
+    animation: girar 0.9s linear infinite;
+}
+
+.carregando-titulo {
+    margin: 0;
     font-family: var(--font-display);
-    font-size: 1.6em;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-blue);
+}
+
+.carregando-texto { margin: 0; max-width: 340px; font-size: 0.92rem; color: var(--color-muted); }
+
+@keyframes girar { to { transform: rotate(360deg); } }
+@keyframes aparecer { from { opacity: 0; } }
+
+/* ---------- Alta demanda: anel com contagem ---------- */
+.anel {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 24px;
+}
+
+.anel svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+
+.anel circle { fill: none; stroke-width: 8; }
+.anel-fundo { stroke: var(--color-border); }
+
+.anel-progresso {
+    stroke: var(--color-orange);
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear;
+}
+
+.anel-numero {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-blue);
+    font-variant-numeric: tabular-nums;
+}
+
+.text-section .contador {
+    margin-top: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-blue);
+}
+
+/* ---------- Erro ---------- */
+.erro-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 24px;
+    border-radius: 22px;
+    background: rgba(234, 113, 59, 0.12);
+    color: var(--color-orange);
 }
 
 /* ---------- Resultado ---------- */
 .resumo-perfil {
-    color: var(--color-muted);
+    margin: 24px auto 0;
+    padding: 18px 22px;
+    max-width: 640px;
+    border-radius: var(--radius-md);
+    background: var(--color-white);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+    font-size: 0.98rem;
+    font-style: italic;
+    text-align: left;
+    box-shadow: var(--shadow-sm);
 }
 
 .recomendacoes {
     list-style: none;
     padding: 0;
-    margin: 30px 0 0;
+    margin: 32px 0 0;
     display: grid;
-    gap: 16px;
+    gap: 18px;
     text-align: left;
 }
 
+/* Card no estilo .sector-card do site, com a cor do setor */
 .recomendacao {
+    position: relative;
+    overflow: hidden;
     background-color: var(--color-white);
     border: 1px solid var(--color-border);
-    border-left: 5px solid var(--color-green);
-    border-radius: var(--radius-md);
-    padding: 22px 24px;
+    border-radius: var(--radius-lg);
+    padding: 26px 28px 24px 32px;
     box-shadow: var(--shadow-sm);
+    transition: transform var(--transition-fast) var(--ease), box-shadow var(--transition-fast) var(--ease);
 }
 
-.recomendacao.principal { border-left-color: var(--color-orange); }
+.recomendacao::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 6px;
+    background: var(--accent, var(--color-blue));
+}
+
+.recomendacao:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+
+.recomendacao.principal {
+    border-color: rgba(234, 113, 59, 0.35);
+    box-shadow: var(--shadow-md);
+}
 
 .recomendacao-topo {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
 }
+
+.sector-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    background: var(--accent, var(--color-blue));
+    color: var(--color-white);
+}
+
+.recomendacao-titulo { flex: 1; min-width: 0; }
 
 .recomendacao h2 {
     color: var(--color-blue);
@@ -328,16 +745,40 @@ textarea:focus-visible {
     margin: 0;
 }
 
-.selo-principal {
-    color: var(--color-orange);
+.sector-num {
+    align-self: flex-start;
+    font-family: var(--font-display);
     font-weight: 700;
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
+    font-size: 1rem;
+    color: var(--color-border);
+}
+
+.selos { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.selos:empty { display: none; }
+
+.selo {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.selo-principal { background: rgba(234, 113, 59, 0.12); color: var(--color-orange-hover); }
+.selo-interesse { background: rgba(192, 210, 31, 0.22); color: var(--color-blue-dark); }
+
+.aderencia-linha {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 18px 0 4px;
 }
 
 .aderencia {
-    margin: 14px 0 6px;
+    flex: 1;
     height: 8px;
     background-color: var(--color-background);
     border-radius: 999px;
@@ -345,14 +786,25 @@ textarea:focus-visible {
 }
 
 .aderencia-barra {
+    width: var(--valor, 0%);
     height: 100%;
-    background: linear-gradient(90deg, var(--color-blue), var(--color-green));
+    background: var(--accent, var(--color-blue));
     border-radius: 999px;
+    animation: encher 1.2s var(--ease) 0.3s both;
 }
 
+@keyframes encher { from { width: 0; } }
+
 .aderencia-rotulo {
+    flex-shrink: 0;
     font-size: 0.85rem;
     color: var(--color-muted);
+}
+
+.aderencia-rotulo strong {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    color: var(--color-blue);
 }
 
 .recomendacao p {
@@ -365,7 +817,7 @@ textarea:focus-visible {
     flex-wrap: wrap;
     gap: 8px;
     padding: 0;
-    margin: 0 0 16px;
+    margin: 0 0 18px;
     list-style: none;
 }
 
@@ -378,29 +830,62 @@ textarea:focus-visible {
     color: var(--color-blue);
 }
 
-.link-setor {
-    color: var(--color-blue);
+/* Mesmo .sector-cta do site */
+.sector-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
     font-weight: 700;
+    color: var(--color-orange);
     text-decoration: none;
 }
 
-.link-setor:hover { color: var(--color-orange); }
+.sector-cta svg { transition: transform var(--transition-fast) var(--ease); }
+.sector-cta:hover svg { transform: translateX(4px); }
+
+.text-section .nota-resultado {
+    margin: 28px auto 0;
+    max-width: 560px;
+    font-size: 0.82rem;
+    color: var(--color-muted);
+}
+
+/* ---------- Entrada suave (como .reveal do site) ---------- */
+.entrada { animation: entrar 0.8s var(--ease) both; }
+.recomendacoes .entrada:nth-child(2) { animation-delay: 0.1s; }
+.recomendacoes .entrada:nth-child(3) { animation-delay: 0.2s; }
+.form-section.entrada { animation-delay: 0.08s; }
+
+@keyframes entrar {
+    from { opacity: 0; transform: translateY(24px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
+        transition-duration: 0.01ms !important;
+    }
+}
 
 /* ---------- Dentro do iframe do site (classe posta por static/embed.js) ----------
    O site já mostra o título, os passos e o aviso de LGPD ao lado da moldura,
    então aqui a introdução some e tudo vira uma coluna compacta. */
-.is-embedded body {
-    display: block;
-    min-height: 0;
-    padding: 28px 24px;
-    background-color: var(--color-white);
-}
-
-.is-embedded .main-wrapper {
-    display: block;
-}
+.is-embedded body { background-color: var(--color-white); }
 
 .is-embedded .oculto-no-site { display: none; }
+
+.is-embedded .pagina {
+    display: block;
+    min-height: 0;
+    padding: 24px 24px 32px;
+}
+
+.is-embedded .stepper { justify-content: flex-start; margin-bottom: 24px; }
+.is-embedded .stepper-item { font-size: 0.8rem; }
+
+.is-embedded .main-wrapper { display: block; }
 
 .is-embedded .text-section {
     min-width: 0;
@@ -409,8 +894,8 @@ textarea:focus-visible {
 }
 
 .is-embedded .text-section h1 { font-size: 1.9rem; }
-
 .is-embedded .text-section p { font-size: 0.95rem; }
+.is-embedded .privacy-notice { margin-top: 16px; }
 
 .is-embedded .form-section {
     min-width: 0;
@@ -421,6 +906,9 @@ textarea:focus-visible {
 
 .is-embedded .titulo-formulario { display: block; }
 
+/* A moldura cresce com o conteúdo: o spinner fica no alto, à vista */
+.is-embedded .carregando { justify-content: flex-start; padding-top: 140px; }
+
 .titulo-formulario {
     display: none;
     margin: 0 0 20px;
@@ -429,7 +917,31 @@ textarea:focus-visible {
 }
 
 @media (max-width: 640px) {
-    body { padding: 16px; }
+    .pagina { padding: 20px 16px 32px; }
+    .topo { padding: 16px 16px 0; }
     .text-section { padding-right: 0; }
-    .form-section { padding: 28px 20px; }
+    .form-section { min-width: 0; padding: 28px 20px; }
+    .is-embedded .pagina { padding: 20px 16px 28px; }
+    .stepper-nome { display: none; }
+    .stepper-item { padding: 4px; }
+    .stepper-item.is-atual { padding-right: 14px; }
+    .stepper-item.is-atual .stepper-nome { display: inline; }
+    .recomendacao { padding: 22px 20px 20px 24px; }
+    .sector-badge { width: 46px; height: 46px; border-radius: 14px; }
+    .aderencia-linha { flex-wrap: wrap; }
+    .botoes .btn-submit.auto { flex: 1 1 100%; }
+}
+
+/* ---------- Impressão do resultado ---------- */
+@media print {
+    body, .is-embedded body { background: #fff; }
+    .topo, .stepper, .botoes, .nao-imprimir, .carregando { display: none !important; }
+    .pagina { display: block; min-height: 0; padding: 0; }
+    .entrada, .aderencia-barra { animation: none; }
+    .recomendacao { break-inside: avoid; box-shadow: none; transform: none; }
+    .sector-badge, .recomendacao::before, .aderencia-barra, .selo {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .sector-cta svg { display: none; }
 }

@@ -1,72 +1,66 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultado da Análise - Viva+</title>
-    <script src="/static/embed.js?v={{ versao_estaticos }}"></script>
-    <link rel="stylesheet" href="/static/style.css?v={{ versao_estaticos }}">
-</head>
-<body>
-    <div class="main-wrapper">
-        <div class="text-section centralizada">
-            <span class="highlight-tag">Etapa 3: resultado</span>
-            <h1>Análise Concluída, {{ candidato }}!</h1>
-            <p>Nossa inteligência artificial analisou suas habilidades técnicas de forma ética e imparcial. Veja abaixo os setores da Viva+ que mais combinam com o seu perfil.</p>
+{% extends "_base.html" %}
+
+{% block titulo %}Resultado da análise{% endblock %}
+
+{% block conteudo %}
+<div class="main-wrapper">
+    <div class="text-section centralizada">
+        <div class="entrada">
+            <span class="highlight-tag">Resultado</span>
+            <h1>Análise concluída, {{ candidato }}!</h1>
+            <p>Nossa inteligência artificial analisou suas habilidades técnicas de forma ética e imparcial. Estes são os setores da Viva+ que mais combinam com o seu perfil.</p>
             {% if resumo_perfil %}
-            <p class="resumo-perfil">{{ resumo_perfil }}</p>
+            <blockquote class="resumo-perfil">{{ resumo_perfil }}</blockquote>
             {% endif %}
+        </div>
 
-            <ol class="recomendacoes">
-                {% for r in recomendacoes %}
-                <li class="recomendacao{% if loop.first %} principal{% endif %}">
-                    <div class="recomendacao-topo">
+        <ol class="recomendacoes">
+            {% for r in recomendacoes %}
+            <li class="recomendacao entrada{% if loop.first %} principal{% endif %}" style="--accent: {{ r.cor }}">
+                <div class="recomendacao-topo">
+                    <div class="sector-badge">{{ r.icone | safe }}</div>
+                    <div class="recomendacao-titulo">
+                        <div class="selos">
+                            {% if loop.first %}<span class="selo selo-principal">Maior aderência</span>{% endif %}
+                            {% if r.interesse %}<span class="selo selo-interesse">Você marcou interesse</span>{% endif %}
+                        </div>
                         <h2>{{ r.nome }}</h2>
-                        {% if loop.first %}<span class="selo-principal">Maior aderência</span>{% endif %}
                     </div>
+                    <span class="sector-num" aria-hidden="true">{{ "%02d" | format(loop.index) }}</span>
+                </div>
+
+                <div class="aderencia-linha">
                     <div class="aderencia" role="img" aria-label="Aderência ao setor {{ r.nome }}: {{ r.aderencia }}%">
-                        <div class="aderencia-barra" style="width: {{ r.aderencia }}%"></div>
+                        <div class="aderencia-barra" style="--valor: {{ r.aderencia }}%"></div>
                     </div>
-                    <span class="aderencia-rotulo">{{ r.aderencia }}% de aderência</span>
+                    <span class="aderencia-rotulo"><strong>{{ r.aderencia }}%</strong> de aderência</span>
+                </div>
 
-                    <p>{{ r.justificativa }}</p>
+                <p>{{ r.justificativa }}</p>
 
-                    {% if r.evidencias %}
-                    <ul class="evidencias" aria-label="Evidências do currículo">
-                        {% for e in r.evidencias %}<li>{{ e }}</li>{% endfor %}
-                    </ul>
-                    {% endif %}
+                {% if r.evidencias %}
+                <ul class="evidencias" aria-label="Evidências do currículo">
+                    {% for e in r.evidencias %}<li>{{ e }}</li>{% endfor %}
+                </ul>
+                {% endif %}
 
-                    <a href="{{ r.link }}" class="link-setor" data-setor="{{ r.setor_id }}" target="_top">Conhecer o setor {{ r.nome }} →</a>
-                </li>
-                {% endfor %}
-            </ol>
+                <a href="{{ r.link }}" class="sector-cta link-setor" data-setor="{{ r.setor_id }}" target="_top">
+                    Conhecer o setor {{ r.nome }}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            </li>
+            {% endfor %}
+        </ol>
 
-            <div class="acoes">
-                <a href="/" class="btn-submit btn-outline auto">Analisar outro currículo</a>
-            </div>
+        <p class="nota-resultado">Esta é uma orientação automática, não uma seleção. Seu currículo fica disponível para o RH da Viva+ por até {{ retencao_dias }} dias.</p>
+
+        <div class="botoes centralizados nao-imprimir">
+            <button type="button" class="btn-submit btn-outline auto" data-imprimir>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Salvar ou imprimir
+            </button>
+            <a href="/" class="btn-submit auto">Analisar outro currículo</a>
         </div>
     </div>
-
-    <script>
-        // Dentro do iframe da seção Carreira do site, pede para o próprio site
-        // abrir o modal do setor (sem recarregar a página). Fora do iframe,
-        // o link segue normal e abre o site já com o modal aberto.
-        const origemSite = new URL({{ site_url | tojson }}).origin;
-        const ancestrais = window.location.ancestorOrigins;
-        const dentroDoSite = window.parent !== window &&
-            (!ancestrais || ancestrais[0] === origemSite);
-
-        document.querySelectorAll(".link-setor").forEach((link) => {
-            link.addEventListener("click", (e) => {
-                if (!dentroDoSite) return;
-                e.preventDefault();
-                window.parent.postMessage(
-                    { type: "vivaplus:abrir-setor", setorId: link.dataset.setor },
-                    origemSite
-                );
-            });
-        });
-    </script>
-</body>
-</html>
+</div>
+{% endblock %}

@@ -1,61 +1,85 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orientação de Carreira - Viva+</title>
-    <script src="/static/embed.js?v={{ versao_estaticos }}"></script>
-    <link rel="stylesheet" href="/static/style.css?v={{ versao_estaticos }}">
-</head>
-<body>
-    <div class="main-wrapper">
-        <!-- Introdução: escondida dentro do site, que já mostra este texto ao lado da moldura -->
-        <div class="text-section oculto-no-site">
-            <span class="highlight-tag">Orientação de carreira</span>
-            <h1>Vamos encontrar o seu lugar na Viva+?</h1>
-            <p>Preencha o formulário e anexe seu currículo. Nossa ferramenta irá analisar seu perfil e sugerir as áreas administrativas mais compatíveis com seus objetivos.</p>
+{% extends "_base.html" %}
 
-            <div class="privacy-notice">
-                <strong>Privacidade e LGPD:</strong> Seus dados e arquivo serão armazenados em ambiente privado e seguro, utilizados apenas para fins de orientação profissional e excluídos automaticamente após {{ retencao_dias }} dias.
-            </div>
+{% block conteudo %}
+<div class="main-wrapper">
+    <!-- Introdução: escondida dentro do site, que já mostra este texto ao lado da moldura -->
+    <div class="text-section oculto-no-site entrada">
+        <span class="highlight-tag">Orientação de carreira</span>
+        <h1>Vamos encontrar o seu lugar na Viva+?</h1>
+        <p>Preencha o formulário e anexe seu currículo. Nossa ferramenta irá analisar seu perfil e sugerir as áreas administrativas mais compatíveis com seus objetivos.</p>
+
+        <div class="privacy-notice">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            <p><strong>Privacidade e LGPD:</strong> seus dados e arquivo ficam em ambiente privado e seguro, são usados apenas para a orientação profissional e excluídos automaticamente após {{ retencao_dias }} dias.</p>
         </div>
+    </div>
 
-        <div class="form-section">
-            <h2 class="titulo-formulario">Envie seu currículo</h2>
-            <form action="/upload" method="POST" enctype="multipart/form-data">
+    <div class="form-section entrada">
+        <h2 class="titulo-formulario">Envie seu currículo</h2>
+        <form action="/upload" method="POST" enctype="multipart/form-data"
+              data-carregando="Lendo o seu currículo…"
+              data-carregando-texto="Estamos extraindo o texto do arquivo para você revisar.">
 
+            <div class="form-linha">
                 <div class="form-group">
                     <label for="nome">Nome completo</label>
-                    <input type="text" id="nome" name="nome" required>
+                    <input type="text" id="nome" name="nome" autocomplete="name" maxlength="120" required>
                 </div>
 
                 <div class="form-group">
                     <label for="email">E-mail</label>
-                    <input type="email" id="email" name="email" required>
+                    <input type="email" id="email" name="email" autocomplete="email" maxlength="160" required>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <label for="areas_interesse">Áreas administrativas de interesse</label>
-                    <input type="text" id="areas_interesse" name="areas_interesse" placeholder="Ex: RH, 4SMA, Comercial..." required>
-                </div>
-
-                <div class="form-group">
-                    <label for="curriculo">Anexar Currículo (PDF ou DOCX, máx 5MB)</label>
-                    <input type="file" id="curriculo" name="curriculo" accept=".pdf,.docx" required>
-                </div>
-
-                <div class="form-group consentimento">
-                    <input type="checkbox" id="consentimento" name="consentimento" value="sim" required>
-                    <label for="consentimento">
-                        Autorizo a Viva+ a usar meu currículo e meus dados <strong>apenas para esta orientação de carreira</strong>.
-                        Antes da análise por IA, dados pessoais como nome, contato, documentos, endereço, idade e estado civil são removidos.
-                        O arquivo e a análise ficam guardados por até {{ retencao_dias }} dias e depois são excluídos automaticamente.
+            {% if setores %}
+            <fieldset class="form-group">
+                <legend>Áreas que despertam seu interesse <span class="opcional">(opcional)</span></legend>
+                <div class="chips">
+                    {% for s in setores %}
+                    <label class="chip" style="--accent: {{ s.cor }}">
+                        <input type="checkbox" name="areas_interesse" value="{{ s.id }}">
+                        <span class="chip-icone">{{ s.icone | safe }}</span>
+                        <span>{{ s.nome }}</span>
                     </label>
+                    {% endfor %}
                 </div>
+                <p class="dica">Isso não muda a análise da IA, que se baseia só no currículo. Serve para o RH conhecer seus interesses.</p>
+            </fieldset>
+            {% else %}
+            <div class="form-group">
+                <label for="areas_interesse">Áreas de interesse <span class="opcional">(opcional)</span></label>
+                <input type="text" id="areas_interesse" name="areas_interesse" placeholder="Ex.: RH, 4SMA, Comercial" maxlength="200">
+            </div>
+            {% endif %}
 
-                <button type="submit" class="btn-submit">Enviar para análise</button>
-            </form>
-        </div>
+            <div class="form-group">
+                <span class="rotulo" id="rotuloCurriculo">Currículo</span>
+                <div class="dropzone" id="dropzone">
+                    <input type="file" id="curriculo" name="curriculo" accept=".pdf,.docx"
+                           data-limite-mb="{{ limite_arquivo_mb }}"
+                           aria-labelledby="rotuloCurriculo" aria-describedby="dropzoneDica erroCurriculo" required>
+                    <svg class="dropzone-icone" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 18v-6"/><path d="m9 15 3-3 3 3"/></svg>
+                    <p class="dropzone-titulo" id="dropzoneTitulo"><strong>Clique para escolher</strong> ou arraste o arquivo aqui</p>
+                    <p class="dropzone-dica" id="dropzoneDica">PDF ou DOCX, até {{ limite_arquivo_mb }} MB</p>
+                </div>
+                <p class="erro-campo" id="erroCurriculo" role="alert" hidden></p>
+            </div>
+
+            <div class="form-group consentimento">
+                <input type="checkbox" id="consentimento" name="consentimento" value="sim" required>
+                <label for="consentimento">
+                    Autorizo a Viva+ a usar meu currículo, meu e-mail e as áreas que marquei <strong>apenas para esta orientação de carreira</strong> e para um eventual contato do RH.
+                    Antes da análise por IA, dados pessoais como nome, contato, documentos, endereço, idade e estado civil são removidos.
+                    Tudo fica guardado por até {{ retencao_dias }} dias e depois é excluído automaticamente.
+                </label>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                Enviar para análise
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+        </form>
     </div>
-</body>
-</html>
+</div>
+{% endblock %}

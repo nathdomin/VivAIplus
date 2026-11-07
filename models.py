@@ -11,6 +11,9 @@ class Setor(BaseModel):
     atividades: List[str] = []
     competencias: List[str] = []
     requisitos: List[str] = []
+    # Visual do site: nome do ícone (js/icones-setores.js) e cor do selo
+    icone: str = ""
+    corAccent: str = ""
 
 
 class RecomendacaoSetor(BaseModel):

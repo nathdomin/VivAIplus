@@ -1,58 +1,76 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processando - Viva+</title>
-    <script src="/static/embed.js?v={{ versao_estaticos }}"></script>
-    <link rel="stylesheet" href="/static/style.css?v={{ versao_estaticos }}">
-</head>
-<body>
-    <div class="main-wrapper">
-        <div class="text-section centralizada">
-            <span class="highlight-tag">Fila de processamento</span>
-            <h1>Só mais um instante 🤖</h1>
-            <p>Nossa Inteligência Artificial está recebendo muitos currículos neste exato segundo.</p>
-            <p>Para garantir a sua análise sem falhas, estamos aguardando a fila do servidor estabilizar.</p>
+{% extends "_base.html" %}
 
-            <p class="contador">Reenviando automaticamente em: <strong id="contador">60</strong></p>
+{% block titulo %}Aguardando a fila{% endblock %}
 
-            <!-- Botão para o usuário apressar o envio -->
-            <div class="acoes">
-                <button class="btn-submit auto" onclick="forcarEnvio()">Tentar Novamente Agora</button>
-            </div>
-
-            <!-- Formulário invisível (usando textarea) -->
-            <form id="formReenvio" action="/analisar" method="POST" style="display: none;">
-                <textarea name="nome">{{ nome }}</textarea>
-                <textarea name="arquivo_salvo">{{ arquivo_salvo }}</textarea>
-                <textarea name="texto_curriculo">{{ texto_curriculo }}</textarea>
-                <textarea name="consentimento_em">{{ consentimento_em }}</textarea>
-            </form>
+{% block conteudo %}
+<div class="main-wrapper">
+    <div class="text-section centralizada entrada">
+        <div class="anel" aria-hidden="true">
+            <svg viewBox="0 0 120 120">
+                <circle class="anel-fundo" cx="60" cy="60" r="52"/>
+                <circle class="anel-progresso" id="anelProgresso" cx="60" cy="60" r="52"/>
+            </svg>
+            <span class="anel-numero" id="contador">60</span>
         </div>
+
+        <span class="highlight-tag">Fila de processamento</span>
+        <h1>Só mais um instante</h1>
+        <p>Nossa inteligência artificial está recebendo muitos currículos agora. Seu texto já está guardado e vamos reenviá-lo automaticamente assim que a fila andar.</p>
+        <p class="contador" role="status" aria-live="polite" id="contadorTexto">Nova tentativa em 60 segundos.</p>
+
+        <div class="botoes centralizados">
+            <button type="button" class="btn-submit auto" id="tentarAgora">Tentar novamente agora</button>
+        </div>
+
+        <!-- Formulário invisível com os dados já revisados -->
+        <form id="formReenvio" action="/analisar" method="POST" hidden
+              data-carregando="Analisando o seu perfil…"
+              data-carregando-texto="Pode levar até 1 minuto. Não feche esta página.">
+            <textarea name="nome">{{ nome }}</textarea>
+            <textarea name="email">{{ email }}</textarea>
+            {% for area in areas_interesse %}<textarea name="areas_interesse">{{ area }}</textarea>{% endfor %}
+            <textarea name="arquivo_salvo">{{ arquivo_salvo }}</textarea>
+            <textarea name="texto_curriculo">{{ texto_curriculo }}</textarea>
+            <textarea name="consentimento_em">{{ consentimento_em }}</textarea>
+        </form>
     </div>
+</div>
+{% endblock %}
 
-    <script>
-        let tempo = 60;
-        const contador = document.getElementById('contador');
-        const form = document.getElementById('formReenvio');
+{% block scripts %}
+<script>
+    (function () {
+        const TOTAL = 60;
+        const form = document.getElementById("formReenvio");
+        const numero = document.getElementById("contador");
+        const texto = document.getElementById("contadorTexto");
+        const anel = document.getElementById("anelProgresso");
+        const circunferencia = 2 * Math.PI * 52;
+        anel.style.strokeDasharray = circunferencia;
 
-        // Função que força o envio imediato e para o relógio
-        function forcarEnvio() {
-            clearInterval(intervalo);
-            contador.innerText = "Enviando...";
-            form.submit();
+        let tempo = TOTAL;
+        let intervalo;
+
+        function desenhar() {
+            numero.textContent = tempo;
+            anel.style.strokeDashoffset = circunferencia * (1 - tempo / TOTAL);
+            if (tempo % 10 === 0) texto.textContent = "Nova tentativa em " + tempo + " segundos.";
         }
 
-        // Relógio automático
-        const intervalo = setInterval(() => {
-            tempo--;
-            contador.innerText = tempo;
+        function enviar() {
+            clearInterval(intervalo);
+            texto.textContent = "Enviando…";
+            // requestSubmit dispara o evento submit, que mostra a tela de carregamento
+            if (form.requestSubmit) form.requestSubmit(); else form.submit();
+        }
 
-            if(tempo <= 0) {
-                forcarEnvio();
-            }
+        document.getElementById("tentarAgora").addEventListener("click", enviar);
+        desenhar();
+        intervalo = setInterval(() => {
+            tempo--;
+            desenhar();
+            if (tempo <= 0) enviar();
         }, 1000);
-    </script>
-</body>
-</html>
+    })();
+</script>
+{% endblock %}
