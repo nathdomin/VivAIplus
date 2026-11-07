@@ -54,7 +54,7 @@ create policy "agente_insere_candidatos"
 -- 3. Retenção ------------------------------------------------------
 -- Apaga todo dia, às 03:15 (UTC), os registros com mais de 180 dias.
 -- O prazo precisa ser o mesmo da variável RETENCAO_DIAS do agente
--- (padrão 180), que apaga os arquivos correspondentes no B2.
+-- (padrão 180), que apaga os arquivos correspondentes no Storage.
 create extension if not exists pg_cron;
 
 select cron.unschedule(jobid)

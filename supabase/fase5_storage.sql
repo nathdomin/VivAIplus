@@ -1,5 +1,5 @@
 -- =============================================================
--- VivAIplus — Fase 5: currículos no Supabase Storage (sai o Backblaze B2)
+-- VivAIplus — Fase 5: currículos no Supabase Storage
 --
 -- Rode este arquivo UMA vez no SQL Editor do painel do Supabase.
 -- Pode rodar de novo sem problema (é idempotente).
