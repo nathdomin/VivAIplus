@@ -6,6 +6,9 @@
 //   { type: "vivaplus:altura", altura }  → o site ajusta a altura da moldura
 //   { type: "vivaplus:etapa",  etapa }   → o site destaca o passo 01/02/03
 //   { type: "vivaplus:abrir-setor", setorId } → o site abre o modal do setor
+//   { type: "vivaplus:pedir-tema" }      → o site responde com vivaplus:tema
+// E recebe do site:
+//   { type: "vivaplus:tema", tema: "claro" | "escuro" }
 (function () {
     "use strict";
 
@@ -36,7 +39,39 @@
 
     window.vivaplusSite = { embutido: paiConhecido, enviar };
 
+    /* ---------- Tema claro/escuro ----------
+       Em outra aba: segue o sistema (e acompanha se ele mudar).
+       Dentro do site: começa pelo sistema e, assim que o site avisa
+       { type: "vivaplus:tema", tema: "claro" | "escuro" }, passa a seguir
+       o botão de tema de lá. */
+    const sistema = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+    let temaDoSite = false;
+
+    function aplicarTema(escuro) {
+        if (escuro) html.setAttribute("data-theme", "dark");
+        else html.removeAttribute("data-theme");
+    }
+
+    aplicarTema(Boolean(sistema && sistema.matches));
+    if (sistema) {
+        const seguirSistema = (e) => { if (!temaDoSite) aplicarTema(e.matches); };
+        if (sistema.addEventListener) sistema.addEventListener("change", seguirSistema);
+        else if (sistema.addListener) sistema.addListener(seguirSistema);
+    }
+
     if (!paiConhecido) return;
+
+    window.addEventListener("message", (e) => {
+        if (e.source !== window.parent || !origens.includes(e.origin)) return;
+        const dados = e.data || {};
+        if (dados.type === "vivaplus:tema" && (dados.tema === "claro" || dados.tema === "escuro")) {
+            temaDoSite = true;
+            aplicarTema(dados.tema === "escuro");
+        }
+    });
+
+    // Pede o tema já: o site pode ter carregado antes ou depois desta página
+    enviar({ type: "vivaplus:pedir-tema" });
 
     document.addEventListener("DOMContentLoaded", () => {
         const etapa = Number(html.dataset.etapa) || 0;
